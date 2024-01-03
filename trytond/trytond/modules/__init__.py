@@ -369,6 +369,29 @@ def register_classes(with_test=False):
         MODULES.append(module)
 
 
+def raw_load_modules(module_list, pool):
+    '''
+    Setup the pool with the provided module list
+    '''
+    module_list = list(module_list)
+    graph = None
+    update = []
+    while graph is None:
+        module_list += update
+        try:
+            graph = create_graph(module_list)
+        except MissingDependenciesException as e:
+            update += e.missings
+
+    modules = set(module_list)
+    for node in graph:
+        module = node.name
+        pool.fill(module, modules)
+    pool.setup()
+    pool.post_init(None)
+    pool.setup_mixin(modules)
+
+
 def load_modules(
         database_name, pool, update=None, lang=None, activatedeps=False):
     # Do not import backend when importing module
