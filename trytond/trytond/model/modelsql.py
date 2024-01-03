@@ -24,6 +24,7 @@ from trytond.rpc import RPC
 from trytond.tools import cursor_dict, grouped_slice, reduce_ids
 from trytond.transaction import (
     Transaction, inactive_records, record_cache_size, without_check_access)
+from trytond.analyzer import ANALYZING
 
 from . import fields
 from .descriptors import dualmethod
@@ -220,7 +221,7 @@ class Index:
         def expression(self):
             expression = self._expression
             database = Transaction().database
-            if database.has_unaccent_indexable():
+            if not ANALYZING and database.has_unaccent_indexable():
                 expression = database.unaccent(expression)
             return expression
 
@@ -347,7 +348,8 @@ class ModelSQL(ModelStorage):
                 target_field = getattr(Target, field_name)
                 if (issubclass(Target, ModelSQL)
                         and not callable(Target.table_query)
-                        and not hasattr(target_field, 'set')):
+                        and not hasattr(target_field, 'set')
+                        and not ANALYZING):
                     target = Target.__table__()
                     column = Column(target, field_name)
                     if not target_field.required and Target != cls:
