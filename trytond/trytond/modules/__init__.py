@@ -388,7 +388,6 @@ def raw_load_modules(module_list, pool):
         module = node.name
         pool.fill(module, modules)
     pool.setup()
-    pool.post_init(None)
     pool.setup_mixin(modules)
 
 
